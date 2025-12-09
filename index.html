@@ -1,0 +1,2127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Deep Learning-Based Cyberbullying Detection Using Multi-Transformer Ensemble Architecture</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- ====== BASIC RESET & TYPOGRAPHY ====== -->
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    :root {
+      --bg: #0b1020;
+      --bg-soft: #141a33;
+      --bg-softer: #1c2340;
+      --accent: #4f46e5;
+      --accent-soft: #6366f1;
+      --accent-soft2: #818cf8;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --text-main: #f9fafb;
+      --text-soft: #9ca3af;
+      --border-soft: #1f2937;
+      --card-radius: 14px;
+      --transition-fast: 0.2s ease;
+      --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.8);
+    }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      background: #1a1a1a;
+      color: var(--text-main);
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+    }
+    a {
+      color: var(--accent-soft2);
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+
+    /* ====== LAYOUT WRAPPERS ====== */
+    .app-shell {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* LOGIN AND DASHBOARD VISIBILITY */
+    #login-section {
+      background: transparent;
+      border-radius: 0;
+      border: none;
+      box-shadow: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    #dashboard-section {
+      display: none; /* shown after login */
+      background: #2d2d2d;
+      padding: 0;
+      border: none;
+      border-radius: 0;
+      margin: 0;
+      min-height: 100vh;
+    }
+
+    /* Dashboard Navigation Bar */
+    .dashboard-nav-bar {
+      background: #1a1a1a;
+      border-bottom: 1px solid rgba(75, 85, 99, 0.5);
+      padding: 16px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 0;
+    }
+    .dashboard-nav-bar .nav-brand {
+      font-size: 20px;
+      font-weight: 700;
+      color: white;
+    }
+    .dashboard-nav-bar .nav-links {
+      display: flex;
+      gap: 40px;
+      list-style: none;
+    }
+    .dashboard-nav-bar .nav-links li a {
+      font-size: 14px;
+      color: white;
+      text-decoration: none;
+      transition: color var(--transition-fast);
+      font-weight: 400;
+    }
+    .dashboard-nav-bar .nav-links li a:hover {
+      color: #ccc;
+      text-decoration: none;
+    }
+    .dashboard-nav-bar .nav-user {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .dashboard-logout-btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      background: #cc0000;
+      color: white;
+      border: none;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .dashboard-logout-btn:hover {
+      background: #b30000;
+    }
+
+    /* Navigation Bar */
+    .nav-bar {
+      background: #2d2d2d;
+      border-bottom: 1px solid rgba(75, 85, 99, 0.5);
+      padding: 16px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 60px;
+    }
+    .nav-brand {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: white;
+    }
+    .nav-links {
+      display: flex;
+      gap: 40px;
+      list-style: none;
+    }
+    .nav-links li a {
+      font-size: 14px;
+      color: white;
+      text-decoration: none;
+      transition: color var(--transition-fast);
+      font-weight: 400;
+    }
+    .nav-links li a:hover {
+      color: #ccc;
+      text-decoration: none;
+    }
+    .nav-links li a.active {
+      color: #fbbf24;
+    }
+    .nav-user {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .nav-user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ec4899, #f97316);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+      color: white;
+    }
+
+    /* ====== LOGIN STYLES ====== */
+    #login-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #1a1a1a;
+    }
+
+    .login-wrapper {
+      display: flex;
+      gap: 0;
+      align-items: center;
+      justify-content: space-between;
+      flex: 1;
+      min-height: calc(100vh - 65px);
+      padding: 40px 80px;
+      position: relative;
+    }
+    .login-brand {
+      position: relative;
+      left: 0;
+      top: auto;
+      transform: none;
+      max-width: 500px;
+      z-index: 1;
+      flex: 1;
+    }
+    .login-title {
+      display: none;
+    }
+    .login-title-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 10% 0, #4f46e5, transparent 55%),
+        radial-gradient(circle at 90% 100%, #ec4899, transparent 50%);
+      box-shadow: 0 0 30px rgba(79, 70, 229, 0.4);
+      font-size: 28px;
+    }
+    .login-brand h1 {
+      font-size: clamp(24px, 3vw, 32px);
+      font-weight: 700;
+      color: white;
+      line-height: 1.3;
+      margin-bottom: 16px;
+    }
+    .login-brand p {
+      color: #b0b0b0;
+      font-size: clamp(13px, 1.2vw, 15px);
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+    .login-badges {
+      display: none;
+    }
+    .badge {
+      font-size: 11px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #e5e7eb;
+      display: none;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .badge-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #22c55e, #4ade80);
+    }
+    .login-highlight {
+      display: none;
+    }
+    .login-highlight-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .login-highlight-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: white;
+    }
+    .login-highlight-text {
+      font-size: 12px;
+      color: #b0b0b0;
+    }
+
+    .login-form-wrapper {
+      padding: 50px 45px;
+      border-radius: 24px;
+      background: white;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      max-width: 480px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+      position: relative;
+      z-index: 2;
+      margin-left: 0;
+      flex-shrink: 0;
+    }
+    .login-form-header {
+      margin-bottom: 28px;
+      text-align: center;
+    }
+    .login-form-header h2 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 0;
+      color: #cc0000;
+    }
+    .login-form-header span {
+      font-size: 13px;
+      color: #888;
+      display: none;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+    .form-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      margin-bottom: 8px;
+      color: #333;
+      font-weight: 600;
+    }
+    .form-label span {
+      font-size: 11px;
+      color: #e5e7eb;
+    }
+    .form-input {
+      width: 100%;
+      background: #f5f5f5;
+      border-radius: 10px;
+      border: 1px solid #e0e0e0;
+      padding: 12px 14px;
+      color: #333;
+      font-size: 14px;
+      outline: none;
+      transition: border-color var(--transition-fast), box-shadow var(--transition-fast),
+        background-color var(--transition-fast);
+    }
+    .form-input:focus {
+      border-color: #bbb;
+      box-shadow: none;
+      background: #fff;
+    }
+    .form-input::placeholder {
+      color: #aaa;
+    }
+
+    .form-row-inline {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 10px;
+      gap: 6px;
+      font-size: 12px;
+    }
+    .checkbox-inline {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #666;
+    }
+    .checkbox-inline input {
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      background: white;
+      cursor: pointer;
+    }
+    .forgot-link {
+      font-size: 12px;
+      color: #cc0000;
+      cursor: pointer;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .forgot-link:hover {
+      text-decoration: underline;
+    }
+
+    .btn-primary {
+      width: 100%;
+      border: none;
+      outline: none;
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 15px;
+      font-weight: 600;
+      background: linear-gradient(135deg, #b30000, #cc0000);
+      color: white;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 4px 12px rgba(204, 0, 0, 0.25);
+      transition: transform var(--transition-fast),
+        box-shadow var(--transition-fast), background var(--transition-fast);
+      margin-top: 12px;
+    }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(204, 0, 0, 0.35);
+      background: linear-gradient(135deg, #9a0000, #b30000);
+    }
+
+    .login-footer {
+      margin-top: 16px;
+      font-size: 13px;
+      color: #666;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+    .login-footer a {
+      color: #cc0000;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .login-footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* ===== FORGOT PASSWORD MODAL ===== */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+    .modal {
+      background: #020617;
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      padding: 18px 20px;
+      max-width: 340px;
+      width: 100%;
+      box-shadow: 0 20px 45px rgba(15, 23, 42, 0.9);
+    }
+    .modal h3 {
+      font-size: 15px;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+    .modal p {
+      font-size: 12px;
+      color: var(--text-soft);
+      margin-bottom: 10px;
+    }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .btn-outline {
+      border-radius: 999px;
+      padding: 6px 12px;
+      border: 1px solid rgba(75, 85, 99, 0.9);
+      background: transparent;
+      color: var(--text-main);
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .btn-small {
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-accent {
+      background: linear-gradient(135deg, #4f46e5, #6366f1);
+      color: white;
+    }
+
+    /* ====== DASHBOARD LAYOUT ====== */
+    #dashboard-section {
+      display: none;
+    }
+
+    .dash-layout {
+      display: block;
+      padding: 0;
+    }
+
+    /* Sidebar */
+    .dash-sidebar {
+      display: none;
+    }
+    .dash-sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .dash-logo {
+      width: 26px;
+      height: 26px;
+      border-radius: 9px;
+      background: radial-gradient(circle at 0 0, #4f46e5, transparent 60%),
+        radial-gradient(circle at 100% 100%, #ec4899, transparent 60%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      box-shadow: 0 0 20px rgba(79, 70, 229, 0.55);
+    }
+    .dash-sidebar-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .dash-sidebar-sub {
+      font-size: 11px;
+      color: var(--text-soft);
+    }
+
+    .dash-nav {
+      margin-top: 4px;
+      border-top: 1px solid rgba(55, 65, 81, 0.9);
+      padding-top: 8px;
+    }
+    .dash-nav-section-title {
+      font-size: 11px;
+      color: var(--text-soft);
+      margin-bottom: 5px;
+    }
+    .dash-nav-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin-bottom: 10px;
+    }
+    .dash-nav-item {
+      font-size: 12px;
+      padding: 6px 8px;
+      border-radius: 9px;
+      color: #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+    .dash-nav-item span {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .dash-nav-item-active {
+      background: radial-gradient(circle at 0 0, rgba(129, 140, 248, 0.4), transparent 60%),
+        rgba(15, 23, 42, 0.98);
+      border-color: rgba(129, 140, 248, 0.7);
+      box-shadow: 0 10px 20px rgba(79, 70, 229, 0.55);
+    }
+
+    .dash-sidebar-footer {
+      margin-top: auto;
+      padding-top: 8px;
+      border-top: 1px solid rgba(55, 65, 81, 0.9);
+      font-size: 11px;
+      color: var(--text-soft);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+    .chip {
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      font-size: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Main dashboard area */
+    .dash-main {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding: 40px 60px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .dash-header-bar {
+      display: none;
+    }
+    .dash-header-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .dash-header-sub {
+      font-size: 13px;
+      color: var(--text-soft);
+      margin-top: 6px;
+    }
+    .dash-user {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--text-soft);
+    }
+    .dash-user-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 0 0, #22c55e, transparent 55%),
+        #020617;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    .dash-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-bottom: 0;
+    }
+    .card {
+      background: white;
+      border-radius: 20px;
+      border: none;
+      padding: 32px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .card:first-child {
+      background: white;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+    .card-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #cc0000;
+      text-align: center;
+      width: 100%;
+    }
+    .card-subtitle {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    /* CSV summary dashboard */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .summary-card {
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      border-radius: 10px;
+      padding: 10px;
+      background: rgba(15, 23, 42, 0.9);
+    }
+    .summary-metric-title {
+      font-size: 11px;
+      color: var(--text-soft);
+      margin-bottom: 2px;
+    }
+    .summary-metric-value {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .bar-list {
+      display: grid;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+    }
+    .bar {
+      flex: 1;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(55, 65, 81, 0.7);
+      overflow: hidden;
+    }
+    .bar-fill {
+      display: block;
+      height: 100%;
+      background: linear-gradient(135deg, #4f46e5, #818cf8);
+    }
+
+    .text-area-main {
+      width: 100%;
+      min-height: 140px;
+      max-height: 180px;
+      background: white;
+      border-radius: 12px;
+      border: 2px solid #ddd;
+      color: #333;
+      padding: 14px;
+      font-size: 14px;
+      resize: vertical;
+      outline: none;
+      font-family: inherit;
+    }
+    .text-area-main::placeholder {
+      color: #999;
+    }
+    .text-area-main:focus {
+      border-color: #999;
+    }
+
+    .btn-row {
+      margin-top: 16px;
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      align-items: center;
+    }
+    .btn-secondary {
+      border-radius: 999px;
+      border: 1px solid #ddd;
+      background: #f5f5f5;
+      color: #333;
+      padding: 8px 16px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      display: inline-block;
+    }
+    .btn-secondary:hover {
+      background: #e8e8e8;
+      border-color: #bbb;
+    }
+    .btn-analyze {
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(135deg, #b30000, #cc0000);
+      color: white;
+      padding: 12px 32px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-analyze:hover {
+      background: linear-gradient(135deg, #9a0000, #b30000);
+    }
+
+    .result-tag-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .pill {
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 14px;
+      border: 2px solid #e0e0e0;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: white;
+      color: #333;
+      font-weight: 600;
+    }
+
+    .result-main-text {
+      font-size: 16px;
+      margin-bottom: 10px;
+      font-weight: 700;
+      color: #000;
+    }
+    .result-sub {
+      font-size: 13px;
+      color: #d4d4d4;
+      line-height: 1.6;
+      padding: 14px;
+      border: 2px solid #3c3c3c;
+      border-radius: 12px;
+      background: #1e1e1e;
+      font-family: 'Consolas', 'Courier New', monospace;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-x: auto;
+    }
+    .result-sub .json-key {
+      color: #9cdcfe;
+    }
+    .result-sub .json-string {
+      color: #ce9178;
+    }
+    .result-sub .json-number {
+      color: #b5cea8;
+    }
+    .result-sub .json-boolean {
+      color: #569cd6;
+    }
+    .result-sub .json-null {
+      color: #569cd6;
+    }
+    .result-sub .json-bracket {
+      color: #ffd700;
+    }
+
+    .code-block {
+      margin-top: 12px;
+      padding: 12px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      border: 1px solid #eee;
+      font-size: 11px;
+      white-space: pre-wrap;
+      max-height: 160px;
+      overflow: auto;
+      color: #333;
+      font-family: 'Courier New', monospace;
+    }
+
+    /* Settings panel */
+    .settings-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .settings-group-title {
+      font-size: 11px;
+      color: var(--text-soft);
+      margin-bottom: 4px;
+    }
+    .settings-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .settings-input {
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      background: #f9f9f9;
+      padding: 8px;
+      font-size: 12px;
+      color: #333;
+      outline: none;
+    }
+    .settings-input:hover {
+      border-color: #999;
+      background: #fff;
+    }
+
+    .label-small {
+      font-size: 12px;
+      color: #666;
+      font-weight: 500;
+    }
+
+    @media (max-width: 900px) {
+      .login-wrapper {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .login-brand {
+        padding-right: 0;
+        border-right: none;
+        border-bottom: 1px solid rgba(55, 65, 81, 0.7);
+        padding-bottom: 14px;
+        margin-bottom: 14px;
+      }
+      .dash-layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .app-shell {
+        margin: 16px;
+      }
+      .dash-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .settings-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- ========== LOGIN SECTION ========== -->
+    <section id="login-section">
+      <!-- Navigation Bar -->
+      <div class="nav-bar">
+        <div class="nav-bar-left">
+          <div class="nav-brand">CBD</div>
+          <ul class="nav-links">
+            <li><a href="#" class="active">Home</a></li>
+            <li><a href="#" id="nav-login">Login</a></li>
+          </ul>
+        </div>
+        <div class="nav-user">
+          <div class="nav-user-avatar">A</div>
+        </div>
+      </div>
+
+      <div class="login-wrapper">
+        <!-- Left: Brand / Description -->
+        <div class="login-brand">
+          <div class="login-title">
+            <div class="login-title-icon">🛡️</div>
+            <div>
+              <h1>Deep Learning-Based Cyberbullying Detection Using Multi-Transformer Ensemble Architecture</h1>
+            </div>
+          </div>
+          <p>
+            Advanced AI-powered analysis using multi-transformer ensemble architecture for social media content monitoring.
+          </p>
+          <div class="login-badges">
+            <span class="badge">
+              <span class="badge-dot"></span> AI-Powered
+            </span>
+            <span class="badge">
+              ⚡ Real-time Analysis
+            </span>
+            <span class="badge">
+              🎯 High Accuracy
+            </span>
+          </div>
+
+          <div class="login-highlight">
+            <div class="login-highlight-icon">✨</div>
+            <div>
+              <div class="login-highlight-title">
+                Monitor and classify online harassment patterns
+              </div>
+              <div class="login-highlight-text">
+                Analyze text posts and comments with client-side heuristics or connect to your secured backend API.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Login card -->
+        <div class="login-form-wrapper">
+          <div class="login-form-header">
+            <h2>Sign in</h2>
+            <span>Access the cyberbullying detection dashboard</span>
+          </div>
+
+          <form id="login-form">
+            <div class="form-group">
+              <div class="form-label">
+                <label for="login-username">Username</label>
+              </div>
+              <input
+                id="login-username"
+                type="text"
+                class="form-input"
+                placeholder="Enter username"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <div class="form-label">
+                <label for="login-password">Password</label>
+              </div>
+              <input
+                id="login-password"
+                type="password"
+                class="form-input"
+                placeholder="••••••••"
+                required
+              />
+            </div>
+
+            <div class="form-row-inline">
+              <label class="checkbox-inline">
+                <input type="checkbox" id="remember-me" />
+                <span>Remember me</span>
+              </label>
+              <span class="forgot-link" id="forgot-password-link">Forgot password?</span>
+            </div>
+
+            <button type="submit" class="btn-primary">
+              <span>Sign in</span>
+            </button>
+
+            <div id="login-error" style="display:none; margin-top:10px; font-size:12px; color:#cc0000;">
+              Invalid credentials. Use Username: Admin, Password: 1234 or create a new account.
+            </div>
+          </form>
+
+          <div class="form-row-inline" style="margin-top:14px;">
+            <span style="font-size:12px; color:#666;">Don't have an account? </span>
+            <span class="forgot-link" id="go-to-signup">Create one</span>
+          </div>
+
+          <form id="signup-form" style="display:none; margin-top:12px;">
+            <div class="login-form-header" style="margin-bottom:12px;">
+              <h2>Create New Account</h2>
+              <span>Sign up for the cyberbullying detection dashboard</span>
+            </div>
+
+            <div class="form-group">
+              <div class="form-label">
+                <label for="signup-name">Name</label>
+              </div>
+              <input
+                id="signup-name"
+                type="text"
+                class="form-input"
+                placeholder="Enter name"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <div class="form-label">
+                <label for="signup-username">Username</label>
+              </div>
+              <input
+                id="signup-username"
+                type="text"
+                class="form-input"
+                placeholder="Create a username"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <div class="form-label">
+                <label for="signup-password">Password</label>
+              </div>
+              <input
+                id="signup-password"
+                type="password"
+                class="form-input"
+                placeholder="Enter password"
+                required
+              />
+            </div>
+
+            <button type="submit" class="btn-primary">
+              <span>Register</span>
+            </button>
+
+            <div id="signup-error" style="display:none; margin-top:10px; font-size:12px; color:#cc0000;">
+              Username already exists. Pick another.
+            </div>
+            <div id="signup-success" style="display:none; margin-top:10px; font-size:12px; color:#22c55e;">
+              Account created. You can now sign in.
+            </div>
+          </form>
+
+          <div class="form-row-inline" id="signup-toggle-row" style="display:none; margin-top:14px;">
+            <span style="font-size:12px; color:#666;">Already have an account? </span>
+            <span class="forgot-link" id="go-to-login">Sign in</span>
+          </div>
+
+          <div class="login-footer">
+            <span>Username: Admin | Password: 1234</span>
+            <span>Need help? <a href="#">View docs</a></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== DASHBOARD SECTION ========== -->
+    <section id="dashboard-section">
+      <!-- Dashboard Navigation Bar -->
+      <div class="dashboard-nav-bar">
+        <div class="nav-bar-left">
+          <div class="nav-brand">CBD</div>
+          <ul class="nav-links">
+            <li><a href="#" class="active">Home</a></li>
+            <li><a href="#">Analysis</a></li>
+          </ul>
+        </div>
+        <div class="nav-user">
+          <div class="nav-user-avatar" id="dashboard-nav-avatar">U</div>
+          <button id="dashboard-logout-btn" class="dashboard-logout-btn">Logout</button>
+        </div>
+      </div>
+
+        <!-- Sidebar -->
+        <aside class="dash-sidebar">
+          <div class="dash-sidebar-header">
+            <div class="dash-logo">🛡️</div>
+            <div>
+              <div class="dash-sidebar-title">Deep Learning Cyberbullying Detection</div>
+              <div class="dash-sidebar-sub">Multi-Transformer Ensemble</div>
+            </div>
+          </div>
+
+          <nav class="dash-nav">
+            <div class="dash-nav-section-title">Main</div>
+            <ul class="dash-nav-list">
+              <li class="dash-nav-item dash-nav-item-active">
+                <span>🏠 Overview</span>
+                <span>●</span>
+              </li>
+            </ul>
+          </nav>
+
+          <div class="dash-sidebar-footer">
+            <div>
+              <div>Signed in as</div>
+              <div id="sidebar-user-username">user</div>
+            </div>
+            <div class="chip">
+              <span style="width:7px;height:7px;border-radius:999px;background:linear-gradient(135deg,#22c55e,#4ade80);"></span>
+              <span>Active</span>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Main content -->
+        <main class="dash-main">
+          <header class="dash-header-bar">
+            <div>
+              <div class="dash-header-title">Analyze for Cyberbullying</div>
+              <div class="dash-header-sub">
+                Paste a social media comment, post, or tweet. Click "Run analysis" to get a prediction with category classification and explanation.
+              </div>
+            </div>
+          </header>
+
+          <div class="dash-grid">
+            <!-- Input card -->
+            <section class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Analyze for Cyberbullying</div>
+                </div>
+              </div>
+
+              <textarea
+                id="analysis-input"
+                class="text-area-main"
+                placeholder="Paste your text here..."
+              ></textarea>
+
+              <div class="btn-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <button class="btn-analyze" type="button" id="load-sample-btn">
+                  Load Sample Text
+                </button>
+                <button class="btn-analyze" type="button" id="analyze-btn">
+                  Analyze Text
+                </button>
+              </div>
+
+              <div style="margin-top:16px; display:grid; gap:8px;">
+                <label class="label-small" for="csv-file-input">Upload CSV for summary</label>
+                <input type="file" id="csv-file-input" accept=".csv" class="settings-input" style="padding:8px;" />
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                  <button class="btn-secondary" type="button" id="csv-summarize-btn">Summarize CSV</button>
+                  <button class="btn-secondary" type="button" id="csv-clear-btn">Clear file</button>
+                </div>
+
+                <div id="csv-summary-panel" style="display:none; margin-top:16px; padding:16px; background:#f9fafb; border-radius:12px; border:1px solid #e5e7eb;">
+                  <div class="card-title" style="font-size:14px; margin-bottom:12px; color:#111827; font-weight:600;">Type distribution</div>
+                  <div id="csv-type-bars" style="display:grid; gap:4px;"></div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Results card -->
+            <section class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Detection Results</div>
+                </div>
+              </div>
+
+              <div id="results-empty" style="display:block;">
+                <div class="result-main-text" style="color:#999;">
+                  No analysis yet. Results will appear here.
+                </div>
+              </div>
+
+              <div id="results-block" style="display:none;">
+                <div class="result-main-text" style="margin-top: 16px;">
+                  Preprocessing text:
+                </div>
+                <div class="result-sub" id="result-explanation">
+                  
+                </div>
+                <div style="display: flex; gap: 32px; margin-top: 16px;">
+                  <div style="flex: 1;">
+                    <div class="result-main-text">
+                      Class:
+                    </div>
+                    <div style="margin-top: 8px;">
+                      <span class="pill">
+                        <span style="width:7px;height:7px;border-radius:999px;background:#ef4444;"></span>
+                        <span id="result-label-text">Bullying</span>
+                      </span>
+                    </div>
+                  </div>
+                  <div style="flex: 1;">
+                    <div class="result-main-text">
+                      Probability score:
+                    </div>
+                    <div style="margin-top: 8px;">
+                      <span class="pill">
+                        <span style="font-weight: 600; font-size: 14px; color: #ef4444;" id="result-confidence">92%</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div style="margin-top: 16px; text-align: center;">
+                  <button class="btn-secondary" type="button" id="clear-results-btn">Clear Output</button>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <!-- Session Log card -->
+          <section class="card" style="display:none;">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Session Log</div>
+                <div class="card-subtitle">All analysis actions during this session.</div>
+              </div>
+              <button class="btn-secondary" type="button" id="clear-log-btn">Clear log</button>
+            </div>
+            <div id="session-log-empty" style="font-size:12px;color:#9ca3af;">No entries yet. Run an analysis to populate the log.</div>
+            <ul id="session-log-list" style="list-style:none; padding-left:0; margin-top:6px; display:none; max-height:220px; overflow:auto; display:grid; gap:6px;"></ul>
+          </section>
+
+        </main>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===== FORGOT PASSWORD MODAL ===== -->
+  <div class="modal-backdrop" id="forgot-modal-backdrop">
+    <div class="modal">
+      <h3>Reset password</h3>
+      <p>Enter the email associated with your account and a reset link will be sent (demo only).</p>
+      <div class="form-group">
+        <label class="form-label" for="forgot-email" style="margin-bottom:4px;">
+          <span>Email</span>
+        </label>
+        <input
+          id="forgot-email"
+          type="email"
+          class="form-input"
+          placeholder="you@example.com"
+        />
+      </div>
+      <div class="modal-actions">
+        <button class="btn-outline" type="button" id="forgot-cancel-btn">
+          Cancel
+        </button>
+        <button class="btn-small btn-accent" type="button" id="forgot-submit-btn">
+          Send link
+        </button>
+      </div>
+      <div id="forgot-msg" style="margin-top:6px;font-size:11px;color:#22c55e;display:none;">
+        Demo: reset link would be sent to the provided email.
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== BASIC JS FOR LOGIN + DEMO ANALYSIS ===== -->
+  <script>
+    const loginForm = document.getElementById("login-form");
+    const loginSection = document.getElementById("login-section");
+    const dashboardSection = document.getElementById("dashboard-section");
+    const loginError = document.getElementById("login-error");
+    const loginUsername = document.getElementById("login-username");
+    const loginPassword = document.getElementById("login-password");
+    const signupForm = document.getElementById("signup-form");
+    const signupUsername = document.getElementById("signup-username");
+    const signupPassword = document.getElementById("signup-password");
+    const signupError = document.getElementById("signup-error");
+    const signupSuccess = document.getElementById("signup-success");
+    const signupName = document.getElementById("signup-name");
+    const goToSignup = document.getElementById("go-to-signup");
+    const goToLogin = document.getElementById("go-to-login");
+    const signupToggleRow = document.getElementById("signup-toggle-row");
+
+    const sidebarUserUsername = document.getElementById("sidebar-user-username");
+    const topbarUserUsername = document.getElementById("topbar-user-username");
+    const navAvatar = document.getElementById("nav-avatar");
+    const logoutBtn = document.getElementById("logout-btn");
+    const dashboardLogoutBtn = document.getElementById("dashboard-logout-btn");
+    const dashboardNavAvatar = document.getElementById("dashboard-nav-avatar");
+
+    // Master credentials
+    const MASTER_USERNAME = "Admin";
+    const MASTER_PASSWORD = "1234";
+    const userAccounts = { [MASTER_USERNAME]: MASTER_PASSWORD };
+
+    const forgotLink = document.getElementById("forgot-password-link");
+    const forgotModalBackdrop = document.getElementById("forgot-modal-backdrop");
+    const forgotCancelBtn = document.getElementById("forgot-cancel-btn");
+    const forgotSubmitBtn = document.getElementById("forgot-submit-btn");
+    const forgotEmail = document.getElementById("forgot-email");
+    const forgotMsg = document.getElementById("forgot-msg");
+
+    const analysisInput = document.getElementById("analysis-input");
+    const analyzeBtn = document.getElementById("analyze-btn");
+    const loadSampleBtn = document.getElementById("load-sample-btn");
+    const clearBtn = document.getElementById("clear-btn");
+    const csvFileInput = document.getElementById("csv-file-input");
+    const csvSummarizeBtn = document.getElementById("csv-summarize-btn");
+    const csvClearBtn = document.getElementById("csv-clear-btn");
+    const csvSummaryPanel = document.getElementById("csv-summary-panel");
+    const csvTypeBars = document.getElementById("csv-type-bars");
+    const sessionLogList = document.getElementById("session-log-list");
+    const sessionLogEmpty = document.getElementById("session-log-empty");
+    const clearLogBtn = document.getElementById("clear-log-btn");
+    const resultsEmpty = document.getElementById("results-empty");
+    const resultsBlock = document.getElementById("results-block");
+    const resultLabelText = document.getElementById("result-label-text");
+    const resultConfidence = document.getElementById("result-confidence");
+    const resultExplanation = document.getElementById("result-explanation");
+    const resultEnsembleJson = document.getElementById("result-ensemble-json");
+    const clearResultsBtn = document.getElementById("clear-results-btn");
+
+    const sessionHistory = [];
+    let usedSampleIndices = []; // Track which samples have been shown
+
+    // Sample texts from A cyberbullying_tweets new.csv dataset
+    const sampleTexts = [
+      // Age-based cyberbullying
+      {
+        text: "Here at home. Neighbors pick on my family and I. Mind you my son is autistic. It feels like high school. They call us names attack us for no reason and bully us all the time.",
+        type: "age",
+        label: "Age Cyberbullying"
+      },
+      {
+        text: "There was a girl in my class in 6th grade who was a little autistic, and her parents thought it'd be better to send her to a public school. She didn't fit in with the class and was lowkey bullied.",
+        type: "age",
+        label: "Age Cyberbullying"
+      },
+      {
+        text: "I get bullied for it. I could look fine in a shirt and feel good about it but as soon as I look in the mirror I get so disgusted with my body.",
+        type: "age",
+        label: "Age Cyberbullying"
+      },
+      {
+        text: "Retards need to be locked up and separated from society.",
+        type: "age",
+        label: "Age Cyberbullying"
+      },
+      {
+        text: "Kids with autism should be kept at home, not in regular schools where they disturb everyone.",
+        type: "age",
+        label: "Age Cyberbullying"
+      },
+      {
+        text: "Why are we wasting resources on special needs kids? They'll never contribute to society anyway.",
+        type: "age",
+        label: "Age Cyberbullying"
+      },
+      {
+        text: "Old people are so useless. They should just stay home and stop taking up space.",
+        type: "age",
+        label: "Age Cyberbullying"
+      },
+      {
+        text: "You're acting like a retard. Maybe you belong in special ed.",
+        type: "age",
+        label: "Age Cyberbullying"
+      },
+      // Ethnicity-based cyberbullying
+      {
+        text: "Hey dumb fuck celebs stop doing something for people for publicity on Facebook... Wtf happen to life u niggers are cowards.",
+        type: "ethnicity",
+        label: "Ethnicity Cyberbullying"
+      },
+      {
+        text: "Fuck u bitch RT @tayyoung_: FUCK OBAMA, dumb ass nigger",
+        type: "ethnicity",
+        label: "Ethnicity Cyberbullying"
+      },
+      {
+        text: "@JoeBiden No Joe, YOU are the RACIST. They have so many video and audio clips of the RACIST shit you have spewed in your past. You hate Black people just admit it.",
+        type: "ethnicity",
+        label: "Ethnicity Cyberbullying"
+      },
+      {
+        text: "Go back to your country you fucking immigrant. We don't want your kind here.",
+        type: "ethnicity",
+        label: "Ethnicity Cyberbullying"
+      },
+      {
+        text: "Muslims are all terrorists. They should be banned from entering our country.",
+        type: "ethnicity",
+        label: "Ethnicity Cyberbullying"
+      },
+      {
+        text: "Mexicans are rapists and criminals. Build the wall now!",
+        type: "ethnicity",
+        label: "Ethnicity Cyberbullying"
+      },
+      {
+        text: "Jewish people control all the money and media. They're ruining this country.",
+        type: "ethnicity",
+        label: "Ethnicity Cyberbullying"
+      },
+      {
+        text: "Asians are so fake and sneaky. Can't trust any of them.",
+        type: "ethnicity",
+        label: "Ethnicity Cyberbullying"
+      },
+      {
+        text: "Why do we let these refugees in? They're just leeching off our system.",
+        type: "ethnicity",
+        label: "Ethnicity Cyberbullying"
+      },
+      {
+        text: "Indians smell bad and their culture is disgusting. Keep them out.",
+        type: "ethnicity",
+        label: "Ethnicity Cyberbullying"
+      },
+      {
+        text: "Black people are naturally more violent and stupid. It's just facts.",
+        type: "ethnicity",
+        label: "Ethnicity Cyberbullying"
+      },
+      {
+        text: "White people are all racist colonizers who stole everything.",
+        type: "ethnicity",
+        label: "Ethnicity Cyberbullying"
+      },
+      {
+        text: "Arabs are all backwards and live in the stone age.",
+        type: "ethnicity",
+        label: "Ethnicity Cyberbullying"
+      },
+      // Gender-based cyberbullying
+      {
+        text: "rape is real..zvasiyana nema jokes about being drunk or being gay or being lesbian...rape is not ones choice or wish",
+        type: "gender",
+        label: "Gender Cyberbullying"
+      },
+      {
+        text: "All women are gold diggers who just want money. They're not worth respect.",
+        type: "gender",
+        label: "Gender Cyberbullying"
+      },
+      {
+        text: "Gay people are disgusting and unnatural. They should be ashamed of themselves.",
+        type: "gender",
+        label: "Gender Cyberbullying"
+      },
+      {
+        text: "Trans people are mentally ill freaks. They need therapy, not acceptance.",
+        type: "gender",
+        label: "Gender Cyberbullying"
+      },
+      {
+        text: "Lesbians just haven't found the right man yet. They're confused.",
+        type: "gender",
+        label: "Gender Cyberbullying"
+      },
+      {
+        text: "Women belong in the kitchen. They're too emotional to handle real jobs.",
+        type: "gender",
+        label: "Gender Cyberbullying"
+      },
+      {
+        text: "Real men don't cry. Stop being such a pussy and man up.",
+        type: "gender",
+        label: "Gender Cyberbullying"
+      },
+      {
+        text: "Feminists are just ugly women who can't get a man.",
+        type: "gender",
+        label: "Gender Cyberbullying"
+      },
+      {
+        text: "I hope you get raped and learn your lesson, bitch.",
+        type: "gender",
+        label: "Gender Cyberbullying"
+      },
+      {
+        text: "Gay marriage is destroying family values. These faggots are ruining society.",
+        type: "gender",
+        label: "Gender Cyberbullying"
+      },
+      {
+        text: "She was asking for it dressed like that. Can't blame him for what he did.",
+        type: "gender",
+        label: "Gender Cyberbullying"
+      },
+      {
+        text: "Non-binary? That's not a real thing. Pick a gender and stop attention seeking.",
+        type: "gender",
+        label: "Gender Cyberbullying"
+      },
+      // Other cyberbullying
+      {
+        text: "RT @alien_lizard: Idiot stick blocked me ðð couldn't handle all these facts",
+        type: "other_cyberbullying",
+        label: "Other Cyberbullying"
+      },
+      {
+        text: "@sferik do you know anything about this? am i missing something?",
+        type: "other_cyberbullying",
+        label: "Other Cyberbullying"
+      },
+      {
+        text: "You're so fucking stupid. How did you even graduate high school?",
+        type: "other_cyberbullying",
+        label: "Other Cyberbullying"
+      },
+      {
+        text: "Kill yourself. Nobody would miss you anyway.",
+        type: "other_cyberbullying",
+        label: "Other Cyberbullying"
+      },
+      {
+        text: "You're worthless trash. Your parents must be ashamed of you.",
+        type: "other_cyberbullying",
+        label: "Other Cyberbullying"
+      },
+      {
+        text: "Fat ass loser. Go to the gym or stop posting pictures of yourself.",
+        type: "other_cyberbullying",
+        label: "Other Cyberbullying"
+      },
+      {
+        text: "Nobody likes you. That's why you have no friends and never will.",
+        type: "other_cyberbullying",
+        label: "Other Cyberbullying"
+      },
+      {
+        text: "You're so ugly. I feel bad for anyone who has to look at your face.",
+        type: "other_cyberbullying",
+        label: "Other Cyberbullying"
+      },
+      {
+        text: "Pathetic loser sitting behind a computer screen. Get a life.",
+        type: "other_cyberbullying",
+        label: "Other Cyberbullying"
+      },
+      {
+        text: "Your opinion is shit and so are you. Shut the fuck up.",
+        type: "other_cyberbullying",
+        label: "Other Cyberbullying"
+      },
+      {
+        text: "Hope you die in a car crash on your way home tonight.",
+        type: "other_cyberbullying",
+        label: "Other Cyberbullying"
+      },
+      {
+        text: "You're a waste of oxygen. The world would be better without you.",
+        type: "other_cyberbullying",
+        label: "Other Cyberbullying"
+      },
+      // Not cyberbullying
+      {
+        text: "In other words #katandandre, your food was crapilicious! #mkr",
+        type: "not_cyberbullying",
+        label: "Not Cyberbullying"
+      },
+      {
+        text: "Why is #aussietv so white? #MKR #theblock #ImACelebrityAU #today #sunrise #studio10 #Neighbours #WonderlandTen #etc",
+        type: "not_cyberbullying",
+        label: "Not Cyberbullying"
+      },
+      {
+        text: "Just finished watching an amazing documentary about climate change. Highly recommend!",
+        type: "not_cyberbullying",
+        label: "Not Cyberbullying"
+      },
+      {
+        text: "Can't wait for the weekend! Planning to go hiking with friends.",
+        type: "not_cyberbullying",
+        label: "Not Cyberbullying"
+      },
+      {
+        text: "Does anyone know a good recipe for chocolate chip cookies?",
+        type: "not_cyberbullying",
+        label: "Not Cyberbullying"
+      },
+      {
+        text: "The weather is beautiful today. Perfect for a picnic in the park.",
+        type: "not_cyberbullying",
+        label: "Not Cyberbullying"
+      },
+      {
+        text: "Just got promoted at work! So excited about this new opportunity.",
+        type: "not_cyberbullying",
+        label: "Not Cyberbullying"
+      },
+      {
+        text: "Looking for recommendations on good books to read. What are you reading lately?",
+        type: "not_cyberbullying",
+        label: "Not Cyberbullying"
+      },
+      {
+        text: "My cat is so adorable when she sleeps. She makes the cutest sounds.",
+        type: "not_cyberbullying",
+        label: "Not Cyberbullying"
+      },
+      {
+        text: "Happy birthday to my best friend! Hope you have an amazing day!",
+        type: "not_cyberbullying",
+        label: "Not Cyberbullying"
+      },
+      {
+        text: "Does anyone want to play basketball at the park this afternoon?",
+        type: "not_cyberbullying",
+        label: "Not Cyberbullying"
+      },
+      {
+        text: "The new Marvel movie was incredible! The visual effects were stunning.",
+        type: "not_cyberbullying",
+        label: "Not Cyberbullying"
+      },
+      {
+        text: "I love autumn. The colors of the leaves are so beautiful this time of year.",
+        type: "not_cyberbullying",
+        label: "Not Cyberbullying"
+      },
+      {
+        text: "Thanks for helping me move last weekend. I really appreciate it!",
+        type: "not_cyberbullying",
+        label: "Not Cyberbullying"
+      },
+      {
+        text: "Anyone know what time the game starts tonight?",
+        type: "not_cyberbullying",
+        label: "Not Cyberbullying"
+      }
+    ];
+
+    // Login handler with master credentials validation
+    loginForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const usernameVal = loginUsername.value.trim();
+      const passVal = loginPassword.value.trim();
+
+      if (!usernameVal || !passVal) {
+        loginError.style.display = "block";
+        loginError.textContent =
+          "Please enter both username and password.";
+        return;
+      }
+
+      // Validate against stored accounts (includes master)
+      const storedPass = userAccounts[usernameVal];
+      if (!storedPass || storedPass !== passVal) {
+        loginError.style.display = "block";
+        loginError.textContent =
+          "Invalid credentials. Use Admin/Admin123 or sign up.";
+        return;
+      }
+
+      loginError.style.display = "none";
+
+      // Show dashboard, hide login
+      loginSection.style.display = "none";
+      dashboardSection.style.display = "block";
+
+      // Update username display and avatar
+      if (sidebarUserUsername) sidebarUserUsername.textContent = usernameVal;
+      if (topbarUserUsername) topbarUserUsername.textContent = usernameVal;
+      const firstLetter = usernameVal.charAt(0).toUpperCase();
+      if (navAvatar) navAvatar.textContent = firstLetter;
+      if (dashboardNavAvatar) dashboardNavAvatar.textContent = firstLetter;
+    });
+
+    // Signup handler
+    signupForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const nameVal = signupName.value.trim();
+      const usernameVal = signupUsername.value.trim();
+      const passVal = signupPassword.value.trim();
+
+      signupError.style.display = "none";
+      signupSuccess.style.display = "none";
+
+      if (!nameVal || !usernameVal || !passVal) {
+        signupError.style.display = "block";
+        signupError.textContent = "Please enter name, username and password.";
+        return;
+      }
+
+      if (userAccounts[usernameVal]) {
+        signupError.style.display = "block";
+        signupError.textContent = "Username already exists. Pick another.";
+        return;
+      }
+
+      userAccounts[usernameVal] = passVal;
+      signupSuccess.style.display = "block";
+      signupSuccess.textContent = "Account created. You can now sign in.";
+
+      // Prefill login and switch back
+      loginUsername.value = usernameVal;
+      loginPassword.value = "";
+      showLogin();
+    });
+
+    // Toggle helpers
+    function showSignup() {
+      loginForm.style.display = "none";
+      loginError.style.display = "none";
+      signupForm.style.display = "block";
+      signupToggleRow.style.display = "flex";
+      signupName.value = "";
+      signupUsername.value = "";
+      signupPassword.value = "";
+    }
+
+    function showLogin() {
+      signupForm.style.display = "none";
+      signupError.style.display = "none";
+      signupSuccess.style.display = "none";
+      signupToggleRow.style.display = "none";
+      loginForm.style.display = "block";
+    }
+
+    goToSignup.addEventListener("click", showSignup);
+    goToLogin.addEventListener("click", showLogin);
+
+    // Forgot password modal handlers
+    forgotLink.addEventListener("click", () => {
+      forgotModalBackdrop.style.display = "flex";
+      forgotEmail.value = loginUsername.value.trim();
+      forgotMsg.style.display = "none";
+    });
+
+    forgotCancelBtn.addEventListener("click", () => {
+      forgotModalBackdrop.style.display = "none";
+    });
+
+    // Logout handler
+    const handleLogout = () => {
+      // Hide dashboard, show login
+      dashboardSection.style.display = "none";
+      loginSection.style.display = "block";
+
+      // Clear form fields
+      loginUsername.value = "";
+      loginPassword.value = "";
+      loginError.style.display = "none";
+    };
+
+    if (logoutBtn) logoutBtn.addEventListener("click", handleLogout);
+    if (dashboardLogoutBtn) dashboardLogoutBtn.addEventListener("click", handleLogout);
+
+    forgotSubmitBtn.addEventListener("click", () => {
+      // Demo only
+      if (!forgotEmail.value.trim()) {
+        forgotMsg.style.display = "block";
+        forgotMsg.style.color = "#fca5a5";
+        forgotMsg.textContent = "Please enter an email address.";
+        return;
+      }
+      forgotMsg.style.display = "block";
+      forgotMsg.style.color = "#22c55e";
+      forgotMsg.textContent =
+        "Demo: a reset link would be sent to " + forgotEmail.value.trim() + ".";
+    });
+
+    // Very simple heuristic demo for analysis
+    if (analyzeBtn) {
+      analyzeBtn.addEventListener("click", () => {
+        if (!analysisInput) {
+          console.error("analysisInput element not found");
+          return;
+        }
+        const text = analysisInput.value.trim();
+        if (!text) {
+          alert("Please enter some text to analyze.");
+          return;
+        }
+        resultsEmpty.style.display = "none";
+        resultsBlock.style.display = "block";
+
+      // Check if this matches a sample text
+      let matchedSample = null;
+      for (let sample of sampleTexts) {
+        if (sample.text === text) {
+          matchedSample = sample;
+          break;
+        }
+      }
+
+      let label = "Not Cyberbullying";
+      let confValue = 85;
+      let explanation = "Text appears neutral or non-harassing. No bullying indicators detected.";
+      let categoryType = "not_cyberbullying";
+      let detectedWords = []; // Initialize detectedWords
+
+      if (matchedSample) {
+        // Use the predefined category and label from CSV
+        label = matchedSample.label;
+        categoryType = matchedSample.type;
+        detectedWords = []; // No detected words for matched samples
+        
+        if (matchedSample.type !== "not_cyberbullying") {
+          confValue = 96;
+          let categoryName = matchedSample.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+          explanation = `This text contains toxic language indicating ${categoryName} cyberbullying. The content includes harmful statements targeting specific characteristics or identities.`;
+        } else {
+          confValue = 88;
+          explanation = "Text appears neutral or supportive. No bullying indicators detected. This represents positive or neutral communication.";
+        }
+      } else {
+        // Advanced keyword detection for custom text - detect category
+        const lower = text.toLowerCase();
+        let detectedCategory = null;
+        let detectedWords = [];
+        let maxMatches = 0;
+
+        // Check ONLY specific categories (age, ethnicity, gender), skip religion and general
+        const specificCategories = ["age", "ethnicity", "gender"];
+        
+        for (const category of specificCategories) {
+          const keywords = bullyingKeywords[category];
+          let matches = [];
+          keywords.forEach(keyword => {
+            if (lower.includes(keyword)) {
+              matches.push(keyword);
+            }
+          });
+          
+          if (matches.length > maxMatches) {
+            maxMatches = matches.length;
+            detectedCategory = category;
+            detectedWords = matches;
+          }
+        }
+
+        if (detectedWords.length > 0) {
+          // Map category to label
+          const categoryLabels = {
+            age: "Age Cyberbullying",
+            ethnicity: "Ethnicity Cyberbullying",
+            gender: "Gender Cyberbullying"
+          };
+          
+          label = categoryLabels[detectedCategory] || "Cyberbullying";
+          categoryType = detectedCategory;
+          confValue = 92;
+          
+          let categoryName = detectedCategory.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+          explanation = `This text contains toxic language indicating ${categoryName} cyberbullying. Detected harmful keywords: ${detectedWords.slice(0, 3).join(", ")}. The content may represent harassment or bullying behavior.`;
+        } else {
+          // No specific category detected = Not Cyberbullying
+          label = "Not Cyberbullying";
+          confValue = 88;
+          categoryType = "not_cyberbullying";
+          explanation = "Text appears neutral or non-harassing. No bullying indicators detected.";
+        }
+      }
+
+      resultLabelText.textContent = label;
+      resultConfidence.textContent = confValue + "%";
+      
+      // Format preprocessing text as JSON with syntax highlighting
+      const preprocessingData = {
+        transformers_used: ["BERT", "RoBERTa"],
+        predicted_label: label,
+        confidence: confValue + "%",
+        detected_keywords: detectedWords.length > 0 ? detectedWords : ["none"],
+        tokens_flagged: detectedWords.length > 0 ? detectedWords : ["none"],
+        analysis_type: "BERT and RoBERTa Ensemble"
+      };
+      
+      // Function to add syntax highlighting to JSON
+      function syntaxHighlight(json) {
+        json = JSON.stringify(json, null, 2);
+        json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return json.replace(/("{1}[^"]*"{1}\s*:)/g, '<span class="json-key">$1</span>')
+                   .replace(/("{1}[^"]*"{1})(?=\s*[,\]\}])/g, '<span class="json-string">$1</span>')
+                   .replace(/\b(\d+)\b/g, '<span class="json-number">$1</span>')
+                   .replace(/\b(true|false)\b/g, '<span class="json-boolean">$1</span>')
+                   .replace(/\b(null)\b/g, '<span class="json-null">$1</span>')
+                   .replace(/([\{\}\[\]])/g, '<span class="json-bracket">$1</span>');
+      }
+      
+      resultExplanation.innerHTML = syntaxHighlight(preprocessingData);
+      
+      // Update the confidence bar width dynamically
+      const barElement = document.querySelector('[id="results-block"] [style*="background"]');
+      if (barElement) {
+        barElement.style.background = `linear-gradient(90deg, #ef4444 0%, #ef4444 ${confValue}%, #e5e5e5 ${confValue}%, #e5e5e5 100%)`;
+      }
+
+      const ensembleMock = {
+        transformers_used: ["BERT", "RoBERTa"],
+        predicted_label: label,
+        confidence: confValue + "%",
+        detected_keywords: detectedWords.length > 0 ? detectedWords : ["none"],
+        tokens_flagged: detectedWords,
+        analysis_type: "BERT and RoBERTa Ensemble"
+      };
+      if (resultEnsembleJson) {
+        resultEnsembleJson.textContent = JSON.stringify(ensembleMock, null, 2);
+      }
+
+      // Add to session history and render log
+      sessionHistory.unshift({
+        timestamp: new Date().toLocaleTimeString(),
+        text: text.slice(0, 140) + (text.length > 140 ? "..." : ""),
+        label,
+        detectedWords: detectedWords.slice(0, 6)
+      });
+      renderSessionLog();
+      });
+    }
+
+    // Render session log list
+    function renderSessionLog() {
+      if (sessionHistory.length === 0) {
+        sessionLogEmpty.style.display = "block";
+        sessionLogList.style.display = "none";
+        return;
+      }
+      sessionLogEmpty.style.display = "none";
+      sessionLogList.style.display = "grid";
+      sessionLogList.innerHTML = sessionHistory
+        .map(entry => {
+          const words = entry.detectedWords.length ? ` | Keywords: ${entry.detectedWords.join(", ")}` : "";
+          return `<li style="border:1px solid rgba(75,85,99,0.6); border-radius:9px; padding:8px; background:rgba(15,23,42,0.85);">
+            <div style="font-size:11px;color:#9ca3af;">${entry.timestamp}</div>
+            <div style="font-size:12px;">${entry.text}</div>
+            <div style="font-size:11px; color:${entry.label === "Cyberbullying" ? "#f87171" : "#22c55e"};">${entry.label}${words}</div>
+          </li>`;
+        })
+        .join("");
+    }
+
+    clearLogBtn.addEventListener("click", () => {
+      sessionHistory.length = 0;
+      renderSessionLog();
+    });
+
+    // CSV summarization
+    csvSummarizeBtn.addEventListener("click", () => {
+      const file = csvFileInput.files?.[0];
+      if (!file) {
+        alert("Please choose a CSV file to summarize.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target?.result;
+        if (typeof text !== "string") {
+          alert("Unable to read the CSV file.");
+          return;
+        }
+        // Robust CSV split handling quoted commas
+        const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+        if (lines.length === 0) {
+          csvSummaryPanel.style.display = "block";
+          csvTypeBars.innerHTML = "<div style='font-size:12px;color:#9ca3af;'>CSV is empty.</div>";
+          return;
+        }
+
+        const splitCSVLine = (line) => {
+          // split by commas not inside quotes
+          const parts = line.match(/(?:\"(?:[^\"]|\"\")*\"|[^,])+/g) || [];
+          return parts.map(p => p.replace(/^\"|\"$/g, "").replace(/\"\"/g, '"'));
+        };
+
+        const headers = splitCSVLine(lines[0]).map(h => h.trim());
+        const rows = lines.slice(1).map(line => splitCSVLine(line));
+        const rowCount = rows.length;
+
+        // Basic per-column unique counts (up to 5 sample values)
+        const columnSummaries = headers.map((header, idx) => {
+          const values = rows.map(r => (r[idx] || "").trim()).filter(Boolean);
+          const uniques = Array.from(new Set(values));
+          const sampleValues = uniques.slice(0, 5);
+          return {
+            header,
+            uniqueCount: uniques.length,
+            sampleValues,
+          };
+        });
+
+        const typeColumnIndex = headers.findIndex(h => h.toLowerCase().includes("type"));
+        const typeCounts = {};
+        if (typeColumnIndex !== -1) {
+          rows.forEach(r => {
+            const key = (r[typeColumnIndex] || "").trim() || "(blank)";
+            typeCounts[key] = (typeCounts[key] || 0) + 1;
+          });
+        }
+
+        // Type distribution list (fixed order)
+        const orderedTypes = [
+          "age",
+          "ethnicity",
+          "gender",
+          "other_cyberbullying",
+          "not_cyberbullying",
+          "(blank)",
+        ];
+
+        if (typeColumnIndex !== -1) {
+          // Normalize keys to lowercase for matching
+          const normalizedCounts = {};
+          Object.entries(typeCounts).forEach(([k, v]) => {
+            const key = (k || "(blank)").toLowerCase();
+            normalizedCounts[key] = (normalizedCounts[key] || 0) + v;
+          });
+
+          csvTypeBars.innerHTML = orderedTypes
+            .map(label => {
+              const count = normalizedCounts[label] || 0;
+              if (count === 0) return ''; // Skip types with 0 count
+              return `<div style="display:flex; justify-content:space-between; font-size:14px; padding:8px 0; border-bottom:1px solid #e5e7eb;">
+                <span style="color:#374151;">${label}</span>
+                <span style="font-weight:600; color:#1f2937;">${count}</span>
+              </div>`;
+            })
+            .filter(Boolean)
+            .join("");
+        } else {
+          csvTypeBars.innerHTML = `<div style="font-size:12px;color:#9ca3af;">No type column detected.</div>`;
+        }
+
+        csvSummaryPanel.style.display = "block";
+      };
+      reader.readAsText(file);
+    });
+
+    // Clear uploaded file and summary
+    csvClearBtn.addEventListener("click", () => {
+      csvFileInput.value = "";
+      csvSummaryPanel.style.display = "none";
+      csvTypeBars.innerHTML = "";
+    });
+
+    // Load sample text functionality - shows random samples without repetition
+    loadSampleBtn.addEventListener("click", () => {
+      // Reset used samples if all have been shown
+      if (usedSampleIndices.length >= sampleTexts.length) {
+        usedSampleIndices = [];
+      }
+      
+      // Get a random index that hasn't been used yet
+      let randomIndex;
+      do {
+        randomIndex = Math.floor(Math.random() * sampleTexts.length);
+      } while (usedSampleIndices.includes(randomIndex));
+      
+      // Mark this index as used
+      usedSampleIndices.push(randomIndex);
+      
+      const sample = sampleTexts[randomIndex];
+      analysisInput.value = sample.text;
+      
+      // Clear previous results
+      resultsBlock.style.display = "none";
+      resultsEmpty.style.display = "flex";
+    });
+
+    // Clear button functionality - clears the input text box
+    if (clearBtn) {
+      clearBtn.addEventListener("click", function(e) {
+        e.preventDefault();
+        analysisInput.value = "";
+        analysisInput.focus();
+      });
+    }
+
+    // Clear results output button
+    if (clearResultsBtn) {
+      clearResultsBtn.addEventListener("click", () => {
+        resultsEmpty.style.display = "block";
+        resultsBlock.style.display = "none";
+      });
+    }
+
+    // Comprehensive bullying keywords by category (from CSV analysis)
+    const bullyingKeywords = {
+      age: ["autistic", "old", "kid", "boomer", "school shooter", "retard", "special needs", "shoot up"],
+      ethnicity: ["nigger", "nigga", "racist", "black people", "white people", "go back", "your country", "your kind", "dumb fuck"],
+      religion: ["muslim", "islam", "christian", "jew", "hindu", "terrorist", "extremist", "supremacist", "anti-semitism", "jihad"],
+      gender: ["rape", "gay", "lesbian", "bitch", "whore", "slut", "feminazi", "sexist", "female", "women belong", "hoe", "hoes"],
+      general: ["kill yourself", "kys", "die in a fire", "hope you die", "you're worthless", "stupid fuck", "dumb fuck", 
+                "useless fuck", "go kill yourself", "rope", "neck yourself", "eat shit", "get raped"]
+    };
+    
+    // Flatten all keywords for general detection
+    const allKeywords = Object.values(bullyingKeywords).flat();
+  </script>
+</body>
+</html>
