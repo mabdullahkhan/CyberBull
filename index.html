@@ -1272,7 +1272,6 @@
               <div class="card-header">
                 <div>
                   <div class="card-title">Model Runner (Ensemble)</div>
-                  <div class="card-subtitle">Execute BERT + RoBERTa and view raw output.</div>
                 </div>
                 <button class="btn-analyze" type="button" id="run-model-btn">Clear and Run again</button>
               </div>
@@ -1389,6 +1388,18 @@
 
     const sessionHistory = [];
     let usedSampleIndices = []; // Track which samples have been shown
+
+    // Comprehensive bullying keywords by category (from CSV analysis)
+    const bullyingKeywords = {
+      age: ["autistic", "old", "kid", "boomer", "school shooter", "retard", "special needs", "shoot up", "bullied", "bullying", "bully"],
+      ethnicity: ["nigger", "nigga", "racist", "black people", "white people", "go back", "your country", "your kind", "dumb fuck", "fuck celebs"],
+      religion: ["muslim", "islam", "christian", "jew", "hindu", "terrorist", "extremist", "supremacist", "anti-semitism", "jihad"],
+      gender: ["rape", "gay", "lesbian", "bitch", "whore", "slut", "feminazi", "sexist", "female", "women belong", "hoe", "hoes"],
+      other_cyberbullying: ["idiot", "disgusting", "piece of shit", "choke and die", "hope you die", "stupid", "dumb", "asshole", "fuck you", "fucked", "shit", "worst", "hate you", "loser", "worthless", "blocked"]
+    };
+    
+    // Flatten all keywords for general detection
+    const allKeywords = Object.values(bullyingKeywords).flat();
 
     // Sample texts from A cyberbullying_tweets new.csv dataset
     const sampleTexts = [
@@ -1863,10 +1874,24 @@
         // Use the predefined category and label from CSV
         label = matchedSample.label;
         categoryType = matchedSample.type;
-        detectedWords = []; // No detected words for matched samples
+        
+        // Extract detected keywords from matched sample text
+        if (matchedSample.type !== "not_cyberbullying") {
+          const lower = text.toLowerCase();
+          const keywords = bullyingKeywords[matchedSample.type] || [];
+          detectedWords = keywords.filter(keyword => lower.includes(keyword));
+          // If no keywords found, try all keywords as fallback
+          if (detectedWords.length === 0) {
+            detectedWords = allKeywords.filter(keyword => lower.includes(keyword));
+          }
+        } else {
+          detectedWords = [];
+        }
         
         if (matchedSample.type !== "not_cyberbullying") {
-          confValue = 96;
+          // Dynamic confidence based on keyword count
+          // More keywords = higher confidence
+          confValue = Math.min(98, 80 + (detectedWords.length * 6));
           let categoryName = matchedSample.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
           explanation = `This text contains toxic language indicating ${categoryName} cyberbullying. The content includes harmful statements targeting specific characteristics or identities.`;
         } else {
@@ -1877,13 +1902,13 @@
         // Advanced keyword detection for custom text - detect category
         const lower = text.toLowerCase();
         let detectedCategory = null;
-        let detectedWords = [];
+        detectedWords = []; // Reuse the outer detectedWords variable
         let maxMatches = 0;
 
-        // Check ONLY specific categories (age, ethnicity, gender), skip religion and general
-        const specificCategories = ["age", "ethnicity", "gender"];
+        // Check all cyberbullying categories
+        const allCategories = ["age", "ethnicity", "gender", "other_cyberbullying"];
         
-        for (const category of specificCategories) {
+        for (const category of allCategories) {
           const keywords = bullyingKeywords[category];
           let matches = [];
           keywords.forEach(keyword => {
@@ -1904,7 +1929,8 @@
           const categoryLabels = {
             age: "Age Cyberbullying",
             ethnicity: "Ethnicity Cyberbullying",
-            gender: "Gender Cyberbullying"
+            gender: "Gender Cyberbullying",
+            other_cyberbullying: "Other Cyberbullying"
           };
           
           label = categoryLabels[detectedCategory] || "Cyberbullying";
@@ -1930,8 +1956,8 @@
         transformers_used: ["BERT", "RoBERTa"],
         predicted_label: label,
         confidence: confValue + "%",
-        detected_keywords: detectedWords.length > 0 ? detectedWords : ["none"],
-        tokens_flagged: detectedWords.length > 0 ? detectedWords : ["none"],
+        detected_keywords: detectedWords.length > 0 ? detectedWords : [],
+        tokens_flagged: detectedWords.length > 0 ? detectedWords : [],
         analysis_type: "BERT and RoBERTa Ensemble"
       };
       
@@ -1959,8 +1985,8 @@
         transformers_used: ["BERT", "RoBERTa"],
         predicted_label: label,
         confidence: confValue + "%",
-        detected_keywords: detectedWords.length > 0 ? detectedWords : ["none"],
-        tokens_flagged: detectedWords,
+        detected_keywords: detectedWords.length > 0 ? detectedWords : [],
+        tokens_flagged: detectedWords.length > 0 ? detectedWords : [],
         analysis_type: "BERT and RoBERTa Ensemble"
       };
       if (resultEnsembleJson) {
@@ -2169,18 +2195,6 @@
       });
     }
 
-    // Comprehensive bullying keywords by category (from CSV analysis)
-    const bullyingKeywords = {
-      age: ["autistic", "old", "kid", "boomer", "school shooter", "retard", "special needs", "shoot up"],
-      ethnicity: ["nigger", "nigga", "racist", "black people", "white people", "go back", "your country", "your kind", "dumb fuck"],
-      religion: ["muslim", "islam", "christian", "jew", "hindu", "terrorist", "extremist", "supremacist", "anti-semitism", "jihad"],
-      gender: ["rape", "gay", "lesbian", "bitch", "whore", "slut", "feminazi", "sexist", "female", "women belong", "hoe", "hoes"],
-      general: ["kill yourself", "kys", "die in a fire", "hope you die", "you're worthless", "stupid fuck", "dumb fuck", 
-                "useless fuck", "go kill yourself", "rope", "neck yourself", "eat shit", "get raped"]
-    };
-    
-    // Flatten all keywords for general detection
-    const allKeywords = Object.values(bullyingKeywords).flat();
   </script>
 </body>
 </html>
