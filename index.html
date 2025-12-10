@@ -818,6 +818,25 @@
       word-wrap: break-word;
       overflow-x: auto;
     }
+    .spinner-inline {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: #9ca3af;
+    }
+    .spinner-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #22c55e;
+      animation: pulse 1s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.7); opacity: 0.6; }
+      50% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(0.7); opacity: 0.6; }
+    }
     .result-sub .json-key {
       color: #9cdcfe;
     }
@@ -1247,6 +1266,19 @@
                 </div>
               </div>
             </section>
+
+            <!-- Model Runner card -->
+            <section class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Model Runner (Ensemble)</div>
+                  <div class="card-subtitle">Execute BERT + RoBERTa and view raw output.</div>
+                </div>
+                <button class="btn-analyze" type="button" id="run-model-btn">Clear and Run again</button>
+              </div>
+              <div class="result-main-text">Raw Model Output</div>
+              <div class="result-sub" id="result-ensemble-json">Run analysis to view output.</div>
+            </section>
           </div>
 
           <!-- Session Log card -->
@@ -1352,6 +1384,7 @@
     const resultConfidence = document.getElementById("result-confidence");
     const resultExplanation = document.getElementById("result-explanation");
     const resultEnsembleJson = document.getElementById("result-ensemble-json");
+    const runModelBtn = document.getElementById("run-model-btn");
     const clearResultsBtn = document.getElementById("clear-results-btn");
 
     const sessionHistory = [];
@@ -1931,7 +1964,7 @@
         analysis_type: "BERT and RoBERTa Ensemble"
       };
       if (resultEnsembleJson) {
-        resultEnsembleJson.textContent = JSON.stringify(ensembleMock, null, 2);
+        resultEnsembleJson.innerHTML = syntaxHighlight(ensembleMock);
       }
 
       // Add to session history and render log
@@ -2092,6 +2125,32 @@
       resultsBlock.style.display = "none";
       resultsEmpty.style.display = "flex";
     });
+
+    // Run model card triggers the main analysis
+    if (runModelBtn) {
+      runModelBtn.addEventListener("click", () => {
+        // show loading indicator in raw output box
+        if (resultEnsembleJson) {
+          resultEnsembleJson.innerHTML = '<div class="spinner-inline"><span class="spinner-dot"></span>Running model...</div>';
+        }
+        // clear current visible outputs
+        if (resultsBlock && resultsEmpty) {
+          resultsBlock.style.display = "none";
+          resultsEmpty.style.display = "flex";
+        }
+        if (resultExplanation) {
+          resultExplanation.innerHTML = "";
+        }
+        // wait 2 seconds with preloader then run analysis
+        setTimeout(() => {
+          if (analyzeBtn) {
+            analyzeBtn.click();
+          } else if (resultEnsembleJson) {
+            resultEnsembleJson.textContent = "Analyze button not found.";
+          }
+        }, 2000);
+      });
+    }
 
     // Clear button functionality - clears the input text box
     if (clearBtn) {
